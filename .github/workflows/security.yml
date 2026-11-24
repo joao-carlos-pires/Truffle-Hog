@@ -1,0 +1,36 @@
+name: DevSecOps Pipeline
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  security:
+    name: Secret Scanning
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Baixar codigo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Instalar TruffleHog
+        run: |
+          curl -fsSL https://raw.githubusercontent.com/trufflesecurity/trufflehog/main/scripts/install.sh -o install.sh
+          sudo sh install.sh -b /usr/local/bin v3.100.1
+
+      - name: Verificar credenciais
+        run: |
+          trufflehog git "file://$(pwd)" --no-verification --no-update --fail
+
+  deploy:
+    name: Deploy simulado
+    needs: security
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Simular deploy
+        run: echo "Deploy autorizado!"
